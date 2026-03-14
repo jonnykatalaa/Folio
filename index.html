@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FolioCap - Multi Asset Portfolio Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-icon">F</div>
+          <div class="brand-text">
+            <strong>FolioCap</strong>
+            <span>Portfolio Tracker</span>
+          </div>
+        </div>
+        <div class="topbar-stats" id="headlineStats"></div>
+      </header>
+
+      <main class="layout-grid">
+        <section class="main-panel">
+          <div class="summary-grid" id="summaryGrid"></div>
+
+          <div class="toolbar">
+            <label class="search-wrap">
+              <span>Search</span>
+              <input id="searchInput" type="text" placeholder="Search name or symbol" />
+            </label>
+
+            <label class="sort-wrap">
+              <span>Sort by</span>
+              <select id="sortSelect">
+                <option value="valueDesc">Value (High to Low)</option>
+                <option value="valueAsc">Value (Low to High)</option>
+                <option value="changeDesc">24h Change (High to Low)</option>
+                <option value="changeAsc">24h Change (Low to High)</option>
+                <option value="nameAsc">Name (A-Z)</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="chip-row" id="typeFilters"></div>
+
+          <div class="table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>24h %</th>
+                  <th>7d %</th>
+                  <th>Holdings</th>
+                  <th>Value</th>
+                  <th>Allocation</th>
+                </tr>
+              </thead>
+              <tbody id="assetRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="panel-card">
+            <h3>Portfolio Allocation</h3>
+            <div class="donut-wrap">
+              <div class="donut-chart" id="donutChart"></div>
+            </div>
+            <ul class="allocation-list" id="allocationList"></ul>
+          </section>
+
+          <section class="panel-card">
+            <h3>Top Movers (24h)</h3>
+            <ul class="movers-list" id="moversList"></ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
