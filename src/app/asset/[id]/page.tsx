@@ -10,7 +10,6 @@ import {
   getChangeColor,
   getAssetClassColor,
   getAssetClassLabel,
-  getChangeBg,
 } from "@/lib/utils";
 import {
   ArrowLeft,

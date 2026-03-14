@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Asset, AssetClass, SortField, SortDirection } from "@/lib/types";
 import { ASSETS } from "@/lib/data";
-import { formatCurrency, formatNumber, cn, getChangeColor, formatPercent } from "@/lib/utils";
+import { formatCurrency, cn, getChangeColor, formatPercent } from "@/lib/utils";
 import MiniSparkline from "./MiniSparkline";
 import { Star, ChevronUp, ChevronDown } from "lucide-react";
 import { usePortfolio } from "@/context/PortfolioContext";
