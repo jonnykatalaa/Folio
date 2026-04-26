@@ -64,6 +64,7 @@ const sortOptions: Array<{ label: string; value: SortKey }> = [
   { label: 'Risk score', value: 'riskScore' },
 ]
 
+const sparkDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const heatColors = ['#35d07f', '#31b96f', '#f2b84b', '#f46f52', '#e44d67']
 
 function App() {
@@ -97,6 +98,11 @@ function App() {
     visibleAssets[0] ??
     assets.find((asset) => asset.symbol === selectedSymbol) ??
     assets[0]
+
+  const selectedSparkline = useMemo(
+    () => selectedAsset.sparkline.map((price, index) => ({ day: sparkDays[index] ?? `${index + 1}`, price })),
+    [selectedAsset],
+  )
 
   const totals = useMemo(() => {
     const marketCap = assets.reduce((sum, asset) => sum + asset.marketCap, 0)
@@ -287,6 +293,7 @@ function App() {
               <span>Price</span>
               <span>24h</span>
               <span>7d</span>
+              <span>Risk</span>
               <span>Market cap</span>
               <span>Volume</span>
               <span>Watch</span>
@@ -321,6 +328,7 @@ function App() {
                   <span>{formatCurrency(asset.price)}</span>
                   <Change value={asset.change24h} />
                   <Change value={asset.change7d} />
+                  <span className="risk-score">{asset.riskScore}/100</span>
                   <span>{formatCurrency(asset.marketCap, true)}</span>
                   <span>{formatCurrency(asset.volume24h, true)}</span>
                   <span>
@@ -366,7 +374,7 @@ function App() {
           </div>
 
           <ResponsiveContainer width="100%" height={210}>
-            <RechartsLineChart data={selectedAsset.sparkline}>
+            <RechartsLineChart data={selectedSparkline}>
               <CartesianGrid stroke="rgba(255,255,255,.08)" vertical={false} />
               <XAxis dataKey="day" tickLine={false} axisLine={false} />
               <YAxis hide domain={['dataMin - 2', 'dataMax + 2']} />
