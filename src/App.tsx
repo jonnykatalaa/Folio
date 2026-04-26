@@ -50,7 +50,7 @@ const formatCurrency = (value: number, compact = false) =>
 const formatPercent = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(2)}%`
 
 const classLabels: Record<AssetClass | 'all', string> = {
-  all: 'All markets',
+  all: 'All',
   crypto: 'Crypto',
   stock: 'Stocks',
   etf: 'ETFs',
@@ -65,7 +65,7 @@ const sortOptions: Array<{ label: string; value: SortKey }> = [
 ]
 
 const sparkDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const heatColors = ['#35d07f', '#31b96f', '#f2b84b', '#f46f52', '#e44d67']
+const heatColors = ['#5e5ce6', '#007aff', '#5ac8fa', '#30d158', '#ff9f0a', '#ff375f', '#af52de']
 const sortAssets = (items: typeof assets, key: SortKey) => [...items].sort((a, b) => b[key] - a[key])
 
 function App() {
@@ -154,96 +154,100 @@ function App() {
 
   return (
     <main className="app-shell">
-      <section className="hero">
-        <nav className="topbar" aria-label="Primary navigation">
-          <div className="brand">
-            <span className="brand-mark">
-              <LineChart size={24} />
-            </span>
-            <span>Folio</span>
-          </div>
-          <div className="nav-links">
-            <a href="#markets">Markets</a>
-            <a href="#portfolio">Portfolio</a>
-            <a href="#intelligence">Intelligence</a>
-          </div>
-          <button className="ghost-button">
-            <Bell size={18} />
-            Live alerts
-          </button>
-        </nav>
-
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <span className="eyebrow">
-              <Sparkles size={16} /> Unified crypto and equity intelligence
-            </span>
-            <h1>Track every market that matters in one command center.</h1>
-            <p>
-              Folio blends CoinMarketCap-style rankings with Wall Street fundamentals, portfolio
-              exposure, sector heatmaps, watchlists, and market-moving news.
-            </p>
-            <div className="hero-actions">
-              <a className="primary-button" href="#markets">
-                Explore markets
-              </a>
-              <a className="secondary-button" href="#portfolio">
-                Review portfolio
-              </a>
-            </div>
-          </div>
-
-          <article className="hero-card glass-card">
-            <div className="card-heading">
-              <span>Global market pulse</span>
-              <span className="live-pill">Live demo data</span>
-            </div>
-            <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={sentimentSeries}>
-                <defs>
-                  <linearGradient id="pulse" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="5%" stopColor="#7c5cff" stopOpacity={0.7} />
-                    <stop offset="95%" stopColor="#7c5cff" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="rgba(255,255,255,.08)" vertical={false} />
-                <XAxis dataKey="time" tickLine={false} axisLine={false} />
-                <YAxis hide domain={[50, 85]} />
-                <Tooltip content={<ChartTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="sentiment"
-                  stroke="#9d86ff"
-                  strokeWidth={3}
-                  fill="url(#pulse)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </article>
+      <nav className="topbar" aria-label="Primary navigation">
+        <div className="brand">
+          <span className="brand-mark">
+            <LineChart size={20} />
+          </span>
+          <span>Folio</span>
         </div>
+        <div className="nav-links">
+          <a href="#markets">Markets</a>
+          <a href="#portfolio">Portfolio</a>
+          <a href="#intelligence">Intelligence</a>
+        </div>
+        <div className="toolbar-actions">
+          <button className="ghost-button" type="button">
+            <span className="live-dot" aria-hidden="true" />
+            Live
+          </button>
+          <button className="icon-button" type="button" aria-label="Notifications">
+            <Bell size={16} />
+          </button>
+        </div>
+      </nav>
+
+      <section className="hero">
+        <div className="hero-copy">
+          <span className="eyebrow">
+            <Sparkles size={14} /> Unified market intelligence
+          </span>
+          <h1>Markets, beautifully.</h1>
+          <p>
+            Folio brings crypto rankings, equity fundamentals, sector flows, and your portfolio
+            into one luminous dashboard — designed with depth, light, and clarity.
+          </p>
+          <div className="hero-actions">
+            <a className="primary-button" href="#markets">
+              Explore markets
+              <ArrowUpRight size={16} />
+            </a>
+            <a className="secondary-button" href="#portfolio">
+              Review portfolio
+            </a>
+          </div>
+        </div>
+
+        <article className="hero-card glass">
+          <div className="card-heading">
+            <span>Global market pulse</span>
+            <span className="live-pill">Live</span>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart data={sentimentSeries}>
+              <defs>
+                <linearGradient id="pulse" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#5e5ce6" stopOpacity={0.55} />
+                  <stop offset="100%" stopColor="#5e5ce6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="rgba(28,16,60,.08)" vertical={false} />
+              <XAxis dataKey="time" tickLine={false} axisLine={false} />
+              <YAxis hide domain={[50, 85]} />
+              <Tooltip content={<ChartTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="sentiment"
+                stroke="#5e5ce6"
+                strokeWidth={3}
+                fill="url(#pulse)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </article>
       </section>
 
       <section className="metrics-grid" aria-label="Market overview metrics">
         <MetricCard
-          icon={<Globe2 />}
+          icon={<Globe2 size={20} />}
           label="Tracked market cap"
           value={formatCurrency(totals.marketCap, true)}
           detail={`${assets.length} crypto, stocks, and ETFs`}
         />
         <MetricCard
-          icon={<Activity />}
+          icon={<Activity size={20} />}
           label="24h traded volume"
           value={formatCurrency(totals.volume, true)}
           detail="Aggregated across demo universe"
         />
         <MetricCard
-          icon={<TrendingUp />}
+          icon={<TrendingUp size={20} />}
           label="Assets up today"
           value={`${totals.gainers}/${assets.length}`}
           detail="Positive 24h price movement"
         />
         <MetricCard
-          icon={<ShieldCheck />}
+          icon={<ShieldCheck size={20} />}
           label="Market confidence"
           value={`${totals.averageSentiment}/100`}
           detail="Composite momentum and news score"
@@ -251,47 +255,52 @@ function App() {
       </section>
 
       <section className="dashboard-grid">
-        <section className="panel market-panel" id="markets">
+        <section className="panel glass market-panel" id="markets">
           <div className="section-header">
             <div>
               <span className="eyebrow">
-                <BarChart3 size={16} /> Ranked assets
+                <BarChart3 size={14} /> Ranked assets
               </span>
-              <h2>Crypto, stocks, and ETFs</h2>
+              <h2>Crypto, stocks &amp; ETFs</h2>
             </div>
             <div className="filters">
               <label className="search-box">
-                <Search size={18} />
+                <Search size={16} />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search BTC, Apple, AI..."
+                  placeholder="Search BTC, Apple, AI…"
                 />
               </label>
-              <label className="select-box">
-                <span>Market</span>
-                <select
-                  value={assetClass}
-                  onChange={(event) => handleMarketChange(event.target.value as AssetClass | 'all')}
-                >
-                  {Object.entries(classLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
+              <div className="segmented" role="tablist" aria-label="Market filter">
+                {(Object.entries(classLabels) as Array<[AssetClass | 'all', string]>).map(
+                  ([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      role="tab"
+                      aria-selected={assetClass === value}
+                      className={assetClass === value ? 'active' : ''}
+                      onClick={() => handleMarketChange(value)}
+                    >
                       {label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={16} />
-              </label>
+                    </button>
+                  ),
+                )}
+              </div>
               <label className="select-box">
                 <span>Sort</span>
-                <select value={sortKey} onChange={(event) => handleSortChange(event.target.value as SortKey)}>
+                <select
+                  value={sortKey}
+                  onChange={(event) => handleSortChange(event.target.value as SortKey)}
+                >
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </select>
-                <ChevronDown size={16} />
+                <ChevronDown size={14} />
               </label>
             </div>
           </div>
@@ -350,7 +359,7 @@ function App() {
                       }}
                       aria-label={`Toggle ${asset.symbol} watchlist`}
                     >
-                      <Star size={17} fill="currentColor" />
+                      <Star size={16} fill="currentColor" />
                     </button>
                   </span>
                 </div>
@@ -364,7 +373,7 @@ function App() {
           </div>
         </section>
 
-        <aside className="panel detail-panel">
+        <aside className="detail-panel glass">
           <div className="detail-title">
             <span className={`asset-logo large ${selectedAsset.assetClass}`}>
               {selectedAsset.assetClass === 'crypto' ? <Bitcoin /> : <Building2 />}
@@ -385,14 +394,24 @@ function App() {
 
           <ResponsiveContainer width="100%" height={210}>
             <RechartsLineChart data={selectedSparkline}>
-              <CartesianGrid stroke="rgba(255,255,255,.08)" vertical={false} />
+              <defs>
+                <linearGradient id="lineStrokePos" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%" stopColor="#30d158" />
+                  <stop offset="100%" stopColor="#5ac8fa" />
+                </linearGradient>
+                <linearGradient id="lineStrokeNeg" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%" stopColor="#ff375f" />
+                  <stop offset="100%" stopColor="#ff9f0a" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="rgba(28,16,60,.08)" vertical={false} />
               <XAxis dataKey="day" tickLine={false} axisLine={false} />
               <YAxis hide domain={['dataMin - 2', 'dataMax + 2']} />
               <Tooltip content={<ChartTooltip />} />
               <Line
                 type="monotone"
                 dataKey="price"
-                stroke={selectedAsset.change7d >= 0 ? '#35d07f' : '#ff657a'}
+                stroke={selectedAsset.change7d >= 0 ? 'url(#lineStrokePos)' : 'url(#lineStrokeNeg)'}
                 strokeWidth={3}
                 dot={false}
               />
@@ -409,11 +428,11 @@ function App() {
       </section>
 
       <section className="insights-grid" id="portfolio">
-        <article className="panel">
+        <article className="panel glass">
           <div className="section-header compact">
             <div>
               <span className="eyebrow">
-                <WalletCards size={16} /> Portfolio
+                <WalletCards size={14} /> Portfolio
               </span>
               <h2>{formatCurrency(portfolioValue)}</h2>
             </div>
@@ -435,21 +454,27 @@ function App() {
           </div>
         </article>
 
-        <article className="panel">
+        <article className="panel glass">
           <div className="section-header compact">
             <div>
               <span className="eyebrow">
-                <Flame size={16} /> Sector heatmap
+                <Flame size={14} /> Sector heatmap
               </span>
-              <h2>Where capital is rotating</h2>
+              <h2>Where capital rotates</h2>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={sectorSummaries} layout="vertical" margin={{ left: 20 }}>
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="name" width={112} tickLine={false} axisLine={false} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={112}
+                tickLine={false}
+                axisLine={false}
+              />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey="change24h" radius={[0, 10, 10, 0]}>
+              <Bar dataKey="change24h" radius={[0, 12, 12, 0]}>
                 {sectorSummaries.map((sector, index) => (
                   <Cell key={sector.name} fill={heatColors[index % heatColors.length]} />
                 ))}
@@ -458,13 +483,13 @@ function App() {
           </ResponsiveContainer>
         </article>
 
-        <article className="panel watchlist-card">
+        <article className="panel glass watchlist-card">
           <div className="section-header compact">
             <div>
               <span className="eyebrow">
-                <Star size={16} /> Watchlist
+                <Star size={14} /> Watchlist
               </span>
-              <h2>{watchlist.length} assets saved</h2>
+              <h2>{watchlist.length} saved</h2>
             </div>
           </div>
           <div className="watchlist-list">
@@ -472,7 +497,7 @@ function App() {
               const asset = assets.find((item) => item.symbol === symbol)!
 
               return (
-                <button key={symbol} onClick={() => setSelectedSymbol(symbol)}>
+                <button key={symbol} type="button" onClick={() => setSelectedSymbol(symbol)}>
                   <span>
                     <strong>{asset.symbol}</strong>
                     <small>{asset.name}</small>
@@ -485,16 +510,16 @@ function App() {
         </article>
       </section>
 
-      <section className="panel intelligence-panel" id="intelligence">
+      <section className="panel glass intelligence-panel" id="intelligence">
         <div className="section-header">
           <div>
             <span className="eyebrow">
-              <BriefcaseBusiness size={16} /> Market intelligence
+              <BriefcaseBusiness size={14} /> Market intelligence
             </span>
             <h2>Signals worth watching</h2>
           </div>
           <span className="refresh-pill">
-            <Clock3 size={15} /> Updated 1 min ago
+            <Clock3 size={14} /> Updated 1 min ago
           </span>
         </div>
         <div className="news-grid">
@@ -524,7 +549,7 @@ function MetricCard({
   detail: string
 }) {
   return (
-    <article className="metric-card">
+    <article className="metric-card glass">
       <span>{icon}</span>
       <div>
         <small>{label}</small>
@@ -540,7 +565,7 @@ function Change({ value }: { value: number }) {
 
   return (
     <span className={`change ${positive ? 'positive' : 'negative'}`}>
-      {positive ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+      {positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
       {formatPercent(value)}
     </span>
   )
