@@ -66,6 +66,7 @@ const sortOptions: Array<{ label: string; value: SortKey }> = [
 
 const sparkDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const heatColors = ['#35d07f', '#31b96f', '#f2b84b', '#f46f52', '#e44d67']
+const sortAssets = (items: typeof assets, key: SortKey) => [...items].sort((a, b) => b[key] - a[key])
 
 function App() {
   const [assetClass, setAssetClass] = useState<AssetClass | 'all'>('all')
@@ -77,14 +78,16 @@ function App() {
   const visibleAssets = useMemo(() => {
     const normalized = query.trim().toLowerCase()
 
-    return assets
-      .filter((asset) => assetClass === 'all' || asset.assetClass === assetClass)
-      .filter((asset) =>
-        [asset.name, asset.symbol, asset.sector, asset.exchange].some((field) =>
-          field.toLowerCase().includes(normalized),
+    return sortAssets(
+      assets
+        .filter((asset) => assetClass === 'all' || asset.assetClass === assetClass)
+        .filter((asset) =>
+          [asset.name, asset.symbol, asset.sector, asset.exchange].some((field) =>
+            field.toLowerCase().includes(normalized),
+          ),
         ),
-      )
-      .sort((a, b) => b[sortKey] - a[sortKey])
+      sortKey,
+    )
   }, [assetClass, query, sortKey])
 
   useEffect(() => {
@@ -137,9 +140,16 @@ function App() {
     setAssetClass(value)
     setQuery('')
     setSelectedSymbol(
-      (value === 'all' ? assets[0] : assets.find((asset) => asset.assetClass === value))?.symbol ??
-        assets[0].symbol,
+      sortAssets(
+        value === 'all' ? assets : assets.filter((asset) => asset.assetClass === value),
+        sortKey,
+      )[0]?.symbol ?? assets[0].symbol,
     )
+  }
+
+  const handleSortChange = (value: SortKey) => {
+    setSortKey(value)
+    setSelectedSymbol(sortAssets(visibleAssets, value)[0]?.symbol ?? selectedSymbol)
   }
 
   return (
@@ -274,7 +284,7 @@ function App() {
               </label>
               <label className="select-box">
                 <span>Sort</span>
-                <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)}>
+                <select value={sortKey} onChange={(event) => handleSortChange(event.target.value as SortKey)}>
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -328,7 +338,7 @@ function App() {
                   <span>{formatCurrency(asset.price)}</span>
                   <Change value={asset.change24h} />
                   <Change value={asset.change7d} />
-                  <span className="risk-score">{asset.riskScore}/100</span>
+                  <span className="risk-cell">{asset.riskScore}/100</span>
                   <span>{formatCurrency(asset.marketCap, true)}</span>
                   <span>{formatCurrency(asset.volume24h, true)}</span>
                   <span>
