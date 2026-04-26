@@ -287,10 +287,18 @@ function App() {
             </div>
             {visibleAssets.length ? (
               visibleAssets.map((asset, index) => (
-                <button
+                <div
                   className={`table-row ${selectedAsset.symbol === asset.symbol ? 'active' : ''}`}
                   key={asset.symbol}
                   onClick={() => setSelectedSymbol(asset.symbol)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setSelectedSymbol(asset.symbol)
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                 >
                   <span>{index + 1}</span>
                   <span className="asset-identity">
@@ -321,7 +329,7 @@ function App() {
                       <Star size={17} fill="currentColor" />
                     </button>
                   </span>
-                </button>
+                </div>
               ))
             ) : (
               <div className="empty-state">
