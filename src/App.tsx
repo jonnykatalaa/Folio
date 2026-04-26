@@ -127,6 +127,15 @@ function App() {
     )
   }
 
+  const handleMarketChange = (value: AssetClass | 'all') => {
+    setAssetClass(value)
+    setQuery('')
+    setSelectedSymbol(
+      (value === 'all' ? assets[0] : assets.find((asset) => asset.assetClass === value))?.symbol ??
+        assets[0].symbol,
+    )
+  }
+
   return (
     <main className="app-shell">
       <section className="hero">
@@ -247,10 +256,7 @@ function App() {
                 <span>Market</span>
                 <select
                   value={assetClass}
-                  onChange={(event) => {
-                    setAssetClass(event.target.value as AssetClass | 'all')
-                    setQuery('')
-                  }}
+                  onChange={(event) => handleMarketChange(event.target.value as AssetClass | 'all')}
                 >
                   {Object.entries(classLabels).map(([value, label]) => (
                     <option key={value} value={value}>
