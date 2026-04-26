@@ -35,8 +35,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { assets, holdings, newsItems, sectorSummaries, sentimentSeries } from './data/assets'
-import type { AssetClass, SortKey } from './types'
+import { assets, holdings, newsItems, sentimentSeries } from './data/assets'
+import { loadMarketData } from './services/marketData'
+import type { Asset, AssetClass, SortKey } from './types'
 import './styles.css'
 
 const formatCurrency = (value: number, compact = false) =>
@@ -66,7 +67,32 @@ const sortOptions: Array<{ label: string; value: SortKey }> = [
 
 const sparkDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const heatColors = ['#35d07f', '#31b96f', '#f2b84b', '#f46f52', '#e44d67']
-const sortAssets = (items: typeof assets, key: SortKey) => [...items].sort((a, b) => b[key] - a[key])
+type AssetList = Asset[]
+
+const sortAssets = (items: AssetList, key: SortKey) => [...items].sort((a, b) => b[key] - a[key])
+
+const summarizeSectors = (items: AssetList) =>
+  Object.values(
+    items.reduce<Record<string, { name: string; marketCap: number; change24h: number; assetCount: number }>>(
+      (accumulator, asset) => {
+        const current = accumulator[asset.sector] ?? {
+          name: asset.sector,
+          marketCap: 0,
+          change24h: 0,
+          assetCount: 0,
+        }
+
+        current.marketCap += asset.marketCap
+        current.change24h += asset.change24h
+        current.assetCount += 1
+        accumulator[asset.sector] = current
+        return accumulator
+      },
+      {},
+    ),
+  )
+    .map((sector) => ({ ...sector, change24h: sector.change24h / sector.assetCount }))
+    .sort((first, second) => second.marketCap - first.marketCap)
 
 function App() {
   const [assetClass, setAssetClass] = useState<AssetClass | 'all'>('all')
@@ -74,21 +100,47 @@ function App() {
   const [query, setQuery] = useState('')
   const [selectedSymbol, setSelectedSymbol] = useState('NVDA')
   const [watchlist, setWatchlist] = useState<string[]>(['BTC', 'NVDA', 'AAPL', 'ETH', 'SPY'])
+  const [marketAssets, setMarketAssets] = useState(assets)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [liveError, setLiveError] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(true)
 
   const visibleAssets = useMemo(() => {
     const normalized = query.trim().toLowerCase()
 
     return sortAssets(
-      assets
+      marketAssets
         .filter((asset) => assetClass === 'all' || asset.assetClass === assetClass)
         .filter((asset) =>
-          [asset.name, asset.symbol, asset.sector, asset.exchange].some((field) =>
-            field.toLowerCase().includes(normalized),
+          [asset.name, asset.symbol, asset.sector, asset.exchange, asset.dataSource].some((field) =>
+            (field ?? '').toLowerCase().includes(normalized),
           ),
         ),
       sortKey,
     )
-  }, [assetClass, query, sortKey])
+  }, [assetClass, marketAssets, query, sortKey])
+
+  const refreshMarketData = async () => {
+    setIsRefreshing(true)
+
+    try {
+      const result = await loadMarketData(marketAssets)
+      setMarketAssets(result.assets)
+      setLastUpdated(new Date(result.status.updatedAt))
+      setLiveError(result.status.error ?? null)
+    } catch (error) {
+      setLiveError(error instanceof Error ? error.message : 'Live data is temporarily unavailable.')
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    void refreshMarketData()
+    const intervalId = window.setInterval(() => void refreshMarketData(), 60000)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   useEffect(() => {
     if (visibleAssets.length && !visibleAssets.some((asset) => asset.symbol === selectedSymbol)) {
@@ -99,8 +151,8 @@ function App() {
   const selectedAsset =
     visibleAssets.find((asset) => asset.symbol === selectedSymbol) ??
     visibleAssets[0] ??
-    assets.find((asset) => asset.symbol === selectedSymbol) ??
-    assets[0]
+    marketAssets.find((asset) => asset.symbol === selectedSymbol) ??
+    marketAssets[0]
 
   const selectedSparkline = useMemo(
     () => selectedAsset.sparkline.map((price, index) => ({ day: sparkDays[index] ?? `${index + 1}`, price })),
@@ -108,18 +160,18 @@ function App() {
   )
 
   const totals = useMemo(() => {
-    const marketCap = assets.reduce((sum, asset) => sum + asset.marketCap, 0)
-    const volume = assets.reduce((sum, asset) => sum + asset.volume24h, 0)
-    const gainers = assets.filter((asset) => asset.change24h > 0).length
+    const marketCap = marketAssets.reduce((sum, asset) => sum + asset.marketCap, 0)
+    const volume = marketAssets.reduce((sum, asset) => sum + asset.volume24h, 0)
+    const gainers = marketAssets.filter((asset) => asset.change24h > 0).length
     const averageSentiment = Math.round(
-      assets.reduce((sum, asset) => sum + asset.sentiment, 0) / assets.length,
+      marketAssets.reduce((sum, asset) => sum + asset.sentiment, 0) / marketAssets.length,
     )
 
     return { marketCap, volume, gainers, averageSentiment }
-  }, [])
+  }, [marketAssets])
 
   const portfolioRows = holdings.map((holding) => {
-    const asset = assets.find((item) => item.symbol === holding.symbol)!
+    const asset = marketAssets.find((item) => item.symbol === holding.symbol)!
     const value = asset.price * holding.quantity
     const cost = holding.averageCost * holding.quantity
     const gain = value - cost
@@ -129,6 +181,7 @@ function App() {
 
   const portfolioValue = portfolioRows.reduce((sum, holding) => sum + holding.value, 0)
   const portfolioGain = portfolioRows.reduce((sum, holding) => sum + holding.gain, 0)
+  const sectors = useMemo(() => summarizeSectors(marketAssets), [marketAssets])
 
   const toggleWatchlist = (symbol: string) => {
     setWatchlist((current) =>
@@ -141,9 +194,9 @@ function App() {
     setQuery('')
     setSelectedSymbol(
       sortAssets(
-        value === 'all' ? assets : assets.filter((asset) => asset.assetClass === value),
+        value === 'all' ? marketAssets : marketAssets.filter((asset) => asset.assetClass === value),
         sortKey,
-      )[0]?.symbol ?? assets[0].symbol,
+      )[0]?.symbol ?? marketAssets[0].symbol,
     )
   }
 
@@ -196,7 +249,9 @@ function App() {
           <article className="hero-card glass-card">
             <div className="card-heading">
               <span>Global market pulse</span>
-              <span className="live-pill">Live demo data</span>
+              <span className="live-pill">
+                {isRefreshing ? 'Refreshing live data' : liveError ? 'Fallback prices' : 'Live data'}
+              </span>
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={sentimentSeries}>
@@ -228,7 +283,7 @@ function App() {
           icon={<Globe2 />}
           label="Tracked market cap"
           value={formatCurrency(totals.marketCap, true)}
-          detail={`${assets.length} crypto, stocks, and ETFs`}
+          detail={`${marketAssets.length} crypto, stocks, and ETFs`}
         />
         <MetricCard
           icon={<Activity />}
@@ -239,7 +294,7 @@ function App() {
         <MetricCard
           icon={<TrendingUp />}
           label="Assets up today"
-          value={`${totals.gainers}/${assets.length}`}
+          value={`${totals.gainers}/${marketAssets.length}`}
           detail="Positive 24h price movement"
         />
         <MetricCard
@@ -258,6 +313,10 @@ function App() {
                 <BarChart3 size={16} /> Ranked assets
               </span>
               <h2>Crypto, stocks, and ETFs</h2>
+            </div>
+            <div className="live-status" role="status">
+              <span>{lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : 'Loading live prices'}</span>
+              <small>{liveError ? `${liveError} Using fallback data.` : 'CoinGecko + Stooq free APIs'}</small>
             </div>
             <div className="filters">
               <label className="search-box">
@@ -445,12 +504,12 @@ function App() {
             </div>
           </div>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={sectorSummaries} layout="vertical" margin={{ left: 20 }}>
+            <BarChart data={sectors} layout="vertical" margin={{ left: 20 }}>
               <XAxis type="number" hide />
               <YAxis type="category" dataKey="name" width={112} tickLine={false} axisLine={false} />
               <Tooltip content={<ChartTooltip />} />
               <Bar dataKey="change24h" radius={[0, 10, 10, 0]}>
-                {sectorSummaries.map((sector, index) => (
+                {sectors.map((sector, index) => (
                   <Cell key={sector.name} fill={heatColors[index % heatColors.length]} />
                 ))}
               </Bar>
@@ -469,7 +528,7 @@ function App() {
           </div>
           <div className="watchlist-list">
             {watchlist.map((symbol) => {
-              const asset = assets.find((item) => item.symbol === symbol)!
+              const asset = marketAssets.find((item) => item.symbol === symbol)!
 
               return (
                 <button key={symbol} onClick={() => setSelectedSymbol(symbol)}>
@@ -494,7 +553,7 @@ function App() {
             <h2>Signals worth watching</h2>
           </div>
           <span className="refresh-pill">
-            <Clock3 size={15} /> Updated 1 min ago
+            <Clock3 size={15} /> {lastUpdated ? `Live at ${lastUpdated.toLocaleTimeString()}` : 'Updating live data'}
           </span>
         </div>
         <div className="news-grid">

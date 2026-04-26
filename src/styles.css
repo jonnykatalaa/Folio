@@ -270,6 +270,24 @@ button {
   align-items: flex-start;
 }
 
+.live-status {
+  display: grid;
+  gap: 4px;
+  min-width: 190px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.live-status span {
+  color: #bbf7d0;
+  font-weight: 900;
+}
+
+.live-source {
+  color: #bbf7d0;
+}
+
 .filters {
   flex-wrap: wrap;
   justify-content: flex-end;

@@ -3,6 +3,7 @@ import type { Asset, MarketSnapshot, PortfolioHolding, SectorSummary } from '../
 export const assets: Asset[] = [
   {
     id: 'bitcoin',
+    coingeckoId: 'bitcoin',
     symbol: 'BTC',
     name: 'Bitcoin',
     assetClass: 'crypto',
@@ -23,6 +24,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'ethereum',
+    coingeckoId: 'ethereum',
     symbol: 'ETH',
     name: 'Ethereum',
     assetClass: 'crypto',
@@ -43,6 +45,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'solana',
+    coingeckoId: 'solana',
     symbol: 'SOL',
     name: 'Solana',
     assetClass: 'crypto',
@@ -63,6 +66,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'nvidia',
+    quoteSymbol: 'nvda.us',
     symbol: 'NVDA',
     name: 'NVIDIA',
     assetClass: 'stock',
@@ -84,6 +88,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'apple',
+    quoteSymbol: 'aapl.us',
     symbol: 'AAPL',
     name: 'Apple',
     assetClass: 'stock',
@@ -105,6 +110,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'microsoft',
+    quoteSymbol: 'msft.us',
     symbol: 'MSFT',
     name: 'Microsoft',
     assetClass: 'stock',
@@ -126,6 +132,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'tesla',
+    quoteSymbol: 'tsla.us',
     symbol: 'TSLA',
     name: 'Tesla',
     assetClass: 'stock',
@@ -147,6 +154,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'amazon',
+    quoteSymbol: 'amzn.us',
     symbol: 'AMZN',
     name: 'Amazon',
     assetClass: 'stock',
@@ -168,6 +176,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'jpmorgan',
+    quoteSymbol: 'jpm.us',
     symbol: 'JPM',
     name: 'JPMorgan Chase',
     assetClass: 'stock',
@@ -189,6 +198,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'spdr-sp-500-etf',
+    quoteSymbol: 'spy.us',
     symbol: 'SPY',
     name: 'SPDR S&P 500 ETF',
     assetClass: 'etf',
@@ -209,6 +219,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'xrp',
+    coingeckoId: 'ripple',
     symbol: 'XRP',
     name: 'XRP',
     assetClass: 'crypto',
@@ -229,6 +240,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'meta',
+    quoteSymbol: 'meta.us',
     symbol: 'META',
     name: 'Meta Platforms',
     assetClass: 'stock',
@@ -250,6 +262,7 @@ export const assets: Asset[] = [
   },
   {
     id: 'chainlink',
+    coingeckoId: 'chainlink',
     symbol: 'LINK',
     name: 'Chainlink',
     assetClass: 'crypto',

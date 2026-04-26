@@ -1,10 +1,11 @@
 # Folio Market Terminal
 
-Folio is a polished market intelligence dashboard for crypto and stocks. It is built as a self-contained React app with local sample data so it works immediately without API keys, while still modeling the core workflows expected from a CoinMarketCap-style product.
+Folio is a polished market intelligence dashboard for crypto and stocks. It uses free, no-key market data APIs with local sample data as a fallback so it works immediately while still modeling the core workflows expected from a CoinMarketCap-style product.
 
 ## Features
 
-- Unified crypto and equity rankings with search, category filters, and sortable market metrics.
+- Unified crypto, ETF, and equity rankings with search, category filters, and sortable market metrics.
+- Live no-key quotes from CoinGecko for crypto and Stooq delayed quotes for stocks/ETFs, refreshed every 60 seconds.
 - Market pulse cards for total capitalization, 24h volume, average sentiment, and leader counts.
 - Asset detail view with price, change, valuation, volume, supply, fundamentals, and a 30-day sparkline.
 - Persistent watchlist stored in the browser.
@@ -27,6 +28,8 @@ npm run lint
 npm run build
 ```
 
-## Notes
+## Live data
 
-The current app uses curated local market data in `src/data/assets.ts` so reviewers can run and test the product without provisioning third-party market data credentials. A production version can replace that module with provider-backed ingestion while keeping the UI contracts in `src/types.ts`.
+- Crypto: CoinGecko simple price API.
+- Stocks and ETFs: Stooq quote CSV API through the Vite dev proxy at `/api/stooq`.
+- Fallback: curated local data in `src/data/assets.ts` stays in place if a free endpoint is unavailable, rate-limited, or offline.

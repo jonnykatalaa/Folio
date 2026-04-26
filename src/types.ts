@@ -12,6 +12,9 @@ export type Asset = {
   name: string
   assetClass: AssetClass
   exchange: string
+  coingeckoId?: string
+  stooqSymbol?: string
+  quoteSymbol?: string
   sector: string
   price: number
   change1h: number
@@ -26,6 +29,17 @@ export type Asset = {
   sentiment: number
   riskScore: number
   description: string
+  dataSource?: string
+  isLive?: boolean
+  liveSource?: string
+  lastUpdated?: string
+}
+
+export type MarketDataStatus = {
+  source: 'live' | 'fallback'
+  updatedAt: string
+  liveSymbols: string[]
+  error?: string
 }
 
 export type PortfolioHolding = {
