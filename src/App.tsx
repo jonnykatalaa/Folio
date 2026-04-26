@@ -20,7 +20,7 @@ import {
   WalletCards,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Area,
   AreaChart,
@@ -86,7 +86,17 @@ function App() {
       .sort((a, b) => b[sortKey] - a[sortKey])
   }, [assetClass, query, sortKey])
 
-  const selectedAsset = assets.find((asset) => asset.symbol === selectedSymbol) ?? assets[0]
+  useEffect(() => {
+    if (visibleAssets.length && !visibleAssets.some((asset) => asset.symbol === selectedSymbol)) {
+      setSelectedSymbol(visibleAssets[0].symbol)
+    }
+  }, [selectedSymbol, visibleAssets])
+
+  const selectedAsset =
+    visibleAssets.find((asset) => asset.symbol === selectedSymbol) ??
+    visibleAssets[0] ??
+    assets.find((asset) => asset.symbol === selectedSymbol) ??
+    assets[0]
 
   const totals = useMemo(() => {
     const marketCap = assets.reduce((sum, asset) => sum + asset.marketCap, 0)
@@ -237,7 +247,10 @@ function App() {
                 <span>Market</span>
                 <select
                   value={assetClass}
-                  onChange={(event) => setAssetClass(event.target.value as AssetClass | 'all')}
+                  onChange={(event) => {
+                    setAssetClass(event.target.value as AssetClass | 'all')
+                    setQuery('')
+                  }}
                 >
                   {Object.entries(classLabels).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -272,43 +285,50 @@ function App() {
               <span>Volume</span>
               <span>Watch</span>
             </div>
-            {visibleAssets.map((asset, index) => (
-              <button
-                className={`table-row ${selectedAsset.symbol === asset.symbol ? 'active' : ''}`}
-                key={asset.symbol}
-                onClick={() => setSelectedSymbol(asset.symbol)}
-              >
-                <span>{index + 1}</span>
-                <span className="asset-identity">
-                  <span className={`asset-logo ${asset.assetClass}`}>
-                    {asset.assetClass === 'crypto' ? <Bitcoin size={18} /> : <Building2 size={18} />}
+            {visibleAssets.length ? (
+              visibleAssets.map((asset, index) => (
+                <button
+                  className={`table-row ${selectedAsset.symbol === asset.symbol ? 'active' : ''}`}
+                  key={asset.symbol}
+                  onClick={() => setSelectedSymbol(asset.symbol)}
+                >
+                  <span>{index + 1}</span>
+                  <span className="asset-identity">
+                    <span className={`asset-logo ${asset.assetClass}`}>
+                      {asset.assetClass === 'crypto' ? <Bitcoin size={18} /> : <Building2 size={18} />}
+                    </span>
+                    <span>
+                      <strong>{asset.name}</strong>
+                      <small>
+                        {asset.symbol} · {asset.exchange}
+                      </small>
+                    </span>
                   </span>
+                  <span>{formatCurrency(asset.price)}</span>
+                  <Change value={asset.change24h} />
+                  <Change value={asset.change7d} />
+                  <span>{formatCurrency(asset.marketCap, true)}</span>
+                  <span>{formatCurrency(asset.volume24h, true)}</span>
                   <span>
-                    <strong>{asset.name}</strong>
-                    <small>
-                      {asset.symbol} · {asset.exchange}
-                    </small>
+                    <button
+                      className={`star-button ${watchlist.includes(asset.symbol) ? 'saved' : ''}`}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        toggleWatchlist(asset.symbol)
+                      }}
+                      aria-label={`Toggle ${asset.symbol} watchlist`}
+                    >
+                      <Star size={17} fill="currentColor" />
+                    </button>
                   </span>
-                </span>
-                <span>{formatCurrency(asset.price)}</span>
-                <Change value={asset.change24h} />
-                <Change value={asset.change7d} />
-                <span>{formatCurrency(asset.marketCap, true)}</span>
-                <span>{formatCurrency(asset.volume24h, true)}</span>
-                <span>
-                  <button
-                    className={`star-button ${watchlist.includes(asset.symbol) ? 'saved' : ''}`}
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      toggleWatchlist(asset.symbol)
-                    }}
-                    aria-label={`Toggle ${asset.symbol} watchlist`}
-                  >
-                    <Star size={17} fill="currentColor" />
-                  </button>
-                </span>
-              </button>
-            ))}
+                </button>
+              ))
+            ) : (
+              <div className="empty-state">
+                <strong>No assets match this view.</strong>
+                <span>Clear the search or switch markets to reload the ranking table.</span>
+              </div>
+            )}
           </div>
         </section>
 
